@@ -1,0 +1,19 @@
+[project]
+name = "mcp-amazon-asin"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.10.1",
+    "playwright>=1.53.0",
+    "pydantic>=2.11.7",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "mypy>=1.16.1",
+    "pytest>=8.4.1",
+    "ruff>=0.12.1",
+]

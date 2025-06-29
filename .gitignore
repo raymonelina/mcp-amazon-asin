@@ -1,0 +1,106 @@
+# -------------------------------
+# Python Core
+# -------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+*.sqlite3
+
+# -------------------------------
+# UV & Virtual Envs
+# -------------------------------
+.uv/                 # local uv virtualenv
+.venv/               # virtualenv created manually or by other tools
+env/
+venv/
+ENV/
+
+# -------------------------------
+# Python Packaging
+# -------------------------------
+*.egg-info/
+*.egg
+.eggs/
+dist/
+build/
+pip-wheel-metadata/
+
+# -------------------------------
+# pyproject + lock
+# -------------------------------
+poetry.lock          # if you switch from uv to poetry
+Pipfile.lock         # pipenv
+*.lock               # safety fallback (uv.lock is tracked usually)
+
+# -------------------------------
+# OS-specific
+# -------------------------------
+.DS_Store
+Thumbs.db
+
+# -------------------------------
+# Editor/IDE Config
+# -------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+
+# -------------------------------
+# Pyright / Type Checking
+# -------------------------------
+.pyright/
+mypy_cache/
+.typing/
+
+# -------------------------------
+# Unit Testing / Coverage
+# -------------------------------
+htmlcov/
+coverage.xml
+.cache/
+.tox/
+.nox/
+pytest_cache/
+.pytest_cache/
+
+# -------------------------------
+# Local Versioning / Secrets
+# -------------------------------
+.python-version      # pyenv, should be local-only
+.env
+.env.*
+
+# -------------------------------
+# Notebook Junk
+# -------------------------------
+.ipynb_checkpoints/
+
+# -------------------------------
+# Logs and Temporary Files
+# -------------------------------
+*.log
+*.tmp
+*.out
+*.orig
+*.rej
+*.bak
+
+# -------------------------------
+# Node.js artifacts (if using frontend or docs)
+# -------------------------------
+node_modules/
+npm-debug.log*
+yarn-error.log*
+dist/
+
+# -------------------------------
+# Mac/Linux System Files
+# -------------------------------
+.AppleDouble
+.LSOverride
+Icon?
+

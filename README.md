@@ -29,22 +29,32 @@ Verify:
 uv --version
 ```
 
-### 3. Install dependencies and enable editable module import
+### 3. Install dependencies
 
+**Option A: Using uv sync (recommended)**
+```bash
+uv sync
+```
+
+**Option B: Using pip-style installation**
 ```bash
 uv pip install -e .
 ```
 
-This will:
-- Create a `.uv/` virtual environment (if not present)
-- Install all dependencies from `pyproject.toml` or `uv.lock`
-- Register the `src/`-based `mcp_amazon_asin` module for relative imports
+**Key differences:**
+- `uv sync`: Modern uv workflow that creates/updates lockfile and installs exact versions
+- `uv pip install -e .`: Traditional pip-style that installs latest compatible versions
+
+Both will:
+- Create a virtual environment
+- Install all dependencies from `pyproject.toml`
+- Enable editable imports for the `mcp_amazon_asin` module
 
 ---
 
-## ▶️ Run the ASIN MCP Server
+## ▶️ Testing the MCP Server (Optional)
 
-Use `uv` with module mode from the root:
+To test the server manually from command line:
 
 ```bash
 uv run -m mcp_amazon_asin.server
@@ -54,6 +64,45 @@ This will:
 - Ensure `playwright` is set up (via `setup_playwright()`)
 - Launch the MCP server on stdin/stdout
 - Register the `get_product_info` tool for use by Claude or any agent framework
+
+---
+
+## 🧠 Claude Desktop Integration
+
+To use this MCP in Claude Desktop, add the following to your `~/.claude/desktop/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "asin": {
+      "command": "/Users/zhurunz/.local/bin/uv",
+      "args": [
+        "--directory",
+        "/Users/zhurunz/Zhurun Zhang/git-hub/mcp-amazon-asin",
+        "run",
+        "-m",
+        "mcp_amazon_asin.server"
+      ]
+    }
+  }
+}
+```
+
+**Important:** Update the paths for your system:
+- Replace `/Users/zhurunz/.local/bin/uv` with your uv installation path
+- Replace `/Users/zhurunz/Zhurun Zhang/git-hub/mcp-amazon-asin` with your project's absolute path
+
+**Find your uv path:**
+```bash
+which uv
+```
+
+**Find your project path:**
+```bash
+pwd  # run this inside your mcp-amazon-asin directory
+```
+
+After updating the config, restart Claude Desktop to load the MCP server.
 
 ---
 
@@ -70,32 +119,6 @@ Returns:
 - Product URL
 
 Example ASIN: `B0CGXY13QW` → returns formatted product information from Amazon.
-
----
-
-## 🧠 Claude Desktop Integration
-
-To use this MCP locally in Claude Desktop, add the following to your `~/.claude/desktop/settings.json`:
-
-```json
-{
-  "mcpServers": {
-    "asin": {
-      "command": "/Users/USER_NAME/.local/bin/uv",
-      "args": [
-        "--directory",
-        "/ABSOLUTE_PATH_TO/mcp-amazon-asin",
-        "run",
-        "-m",
-        "mcp_amazon_asin.server"
-      ]
-    }
-  }
-}
-```
-
-> 🧩 Replace `/USER_NAME/` with your user name.
-> 🧩 Replace `/ABSOLUTE_PATH_TO/` with your actual project path.
 
 ---
 

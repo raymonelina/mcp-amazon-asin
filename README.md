@@ -126,12 +126,21 @@ Example ASIN: `B0CGXY13QW` → returns formatted product information from Amazon
 
 For local testing, you can use the CLI directly:
 
+**Commands:**
+- `product` - Get product information by ASIN
+- `search` - Search Amazon products
+- `refinements` - Get available refinement categories for search query
+- `theme` - Get themed product recommendations
+
 ```bash
 # Get product info by ASIN
 amazon-asin-cli product B0CGXY13QW
 
 # Search for products
 amazon-asin-cli search "wireless headphones"
+
+# Get refinement categories for a search
+amazon-asin-cli refinements "wireless headphones"
 
 # Get themed product recommendations
 amazon-asin-cli theme "gaming setup"

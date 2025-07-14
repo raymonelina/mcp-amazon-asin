@@ -251,6 +251,7 @@ name = "mcp-amazon-asin"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "click" },
     { name = "mcp" },
     { name = "playwright" },
     { name = "pydantic" },
@@ -266,6 +267,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "click", specifier = ">=8.0.0" },
     { name = "mcp", specifier = ">=1.10.1" },
     { name = "playwright", specifier = ">=1.53.0" },
     { name = "pydantic", specifier = ">=2.11.7" },

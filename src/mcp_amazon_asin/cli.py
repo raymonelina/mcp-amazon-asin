@@ -89,7 +89,7 @@ def main():
     for name, cmd in cli.commands.items():
         if inspect.iscoroutinefunction(cmd.callback):
             original_callback = cmd.callback
-            cmd.callback = lambda *args, **kwargs: asyncio.run(original_callback(*args, **kwargs))
+            cmd.callback = lambda *args, callback=original_callback, **kwargs: asyncio.run(callback(*args, **kwargs))
     
     cli()
 

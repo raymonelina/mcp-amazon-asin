@@ -51,6 +51,21 @@ async def extract_dp(asin: str) -> dict:
         except Exception:
             images = None
 
+        try:
+            sold_by = await page.locator("#merchant-info a, #sellerProfileTriggerId, [data-feature-name='merchant'] a").first.text_content()
+        except Exception:
+            sold_by = None
+
+        try:
+            delivery_date = await page.locator("#mir-layout-DELIVERY_BLOCK span[data-csa-c-type='element'], #deliveryBlockMessage, [data-feature-name='delivery'] span").first.text_content()
+        except Exception:
+            delivery_date = None
+
+        try:
+            delivering_to = await page.locator("#glow-ingress-line1, #contextualIngressPt").first.text_content()
+        except Exception:
+            delivering_to = None
+
         await browser.close()
 
     return {
@@ -61,4 +76,7 @@ async def extract_dp(asin: str) -> dict:
         "rating": rating.strip() if rating else None,
         "features": [b.strip() for b in bullets if b.strip()],
         "image": images,
+        "sold_by": sold_by.strip() if sold_by else None,
+        "delivery_date": delivery_date.strip() if delivery_date else None,
+        "delivering_to": delivering_to.strip() if delivering_to else None,
     }

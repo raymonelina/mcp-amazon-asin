@@ -22,8 +22,8 @@ def cli():
 
 
 @cli.command()
-@click.argument('asin')
-@click.option('--json', 'output_json', is_flag=True, help='Output as JSON')
+@click.argument("asin")
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 async def product(asin: str, output_json: bool):
     """Get product information by ASIN"""
     try:
@@ -34,10 +34,13 @@ async def product(asin: str, output_json: bool):
             click.echo(f"Title: {result['title']}")
             click.echo(f"Price: {result['price']}")
             click.echo(f"Rating: {result['rating']}")
+            click.echo(f"Sold by: {result['sold_by']}")
+            click.echo(f"Delivery date: {result['delivery_date']}")
+            click.echo(f"Delivering to: {result['delivering_to']}")
             click.echo(f"URL: {result['url']}")
-            if result['features']:
+            if result["features"]:
                 click.echo("Features:")
-                for feature in result['features'][:5]:
+                for feature in result["features"][:5]:
                     click.echo(f"  • {feature}")
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
@@ -45,9 +48,9 @@ async def product(asin: str, output_json: bool):
 
 
 @cli.command()
-@click.argument('query')
-@click.option('--limit', default=10, help='Number of results to return')
-@click.option('--json', 'output_json', is_flag=True, help='Output as JSON')
+@click.argument("query")
+@click.option("--limit", default=10, help="Number of results to return")
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 async def search(query: str, limit: int, output_json: bool):
     """Search Amazon products"""
     try:
@@ -63,18 +66,18 @@ async def search(query: str, limit: int, output_json: bool):
 
 
 @cli.command()
-@click.argument('query')
-@click.option('--limit', default=5, help='Number of products to fetch details for')
+@click.argument("query")
+@click.option("--limit", default=5, help="Number of products to fetch details for")
 async def theme(query: str, limit: int):
     """Get themed product recommendations"""
     try:
         search_results = await extract_search(query, limit)
         products = []
         for result in search_results:
-            if result and result['asin']:
-                product = await extract_dp(result['asin'])
+            if result and result["asin"]:
+                product = await extract_dp(result["asin"])
                 products.append(product)
-        
+
         click.echo(json.dumps(products, indent=2))
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
@@ -84,13 +87,17 @@ async def theme(query: str, limit: int):
 def main():
     """Async wrapper for CLI"""
     import inspect
-    
+
     # Convert async commands to sync
     for name, cmd in cli.commands.items():
         if inspect.iscoroutinefunction(cmd.callback):
             original_callback = cmd.callback
-            cmd.callback = lambda *args, callback=original_callback, **kwargs: asyncio.run(callback(*args, **kwargs))
-    
+            cmd.callback = (
+                lambda *args, callback=original_callback, **kwargs: asyncio.run(
+                    callback(*args, **kwargs)
+                )
+            )
+
     cli()
 
 

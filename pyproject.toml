@@ -1,13 +1,14 @@
 [project]
 name = "mcp-amazon-asin"
 version = "0.1.0"
-description = "Add your description here"
+description = "Model Context Protocol (MCP) server for fetching Amazon product information using ASIN with CLI testing tools"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "mcp>=1.10.1",
     "playwright>=1.53.0",
     "pydantic>=2.11.7",
+    "click>=8.0.0",
 ]
 
 [dependency-groups]
@@ -28,3 +29,7 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[project.scripts]
+asin-cli = "mcp_amazon_asin.cli:main"
+asin-test = "mcp_amazon_asin.test_runner:main"

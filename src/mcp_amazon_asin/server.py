@@ -6,6 +6,7 @@ This server provides tools to fetch product information from Amazon using ASIN.
 """
 
 import asyncio
+import json
 from typing import Any
 
 import mcp.types as types
@@ -30,6 +31,12 @@ class SearchInput(BaseModel):
     """Input for Amazon product search"""
 
     query: str = Field(..., description="Search query for Amazon products")
+
+
+class ThemeInput(BaseModel):
+    """Input for Amazon product theme search"""
+
+    query: str = Field(..., description="Search query for Amazon product theme")
 
 
 # Create server instance
@@ -68,7 +75,34 @@ async def handle_list_tools() -> list[types.Tool]:
                 "required": ["query"],
             },
         ),
+        types.Tool(
+            name="get_theme",
+            description="Get a list of product information for a given Amazon search theme",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The Amazon product search theme query",
+                    }
+                },
+                "required": ["query"],
+            },
+        ),
     ]
+
+
+async def get_theme_products(input: ThemeInput) -> list[dict]:
+    """Get a list of product information for a given Amazon search theme"""
+    search_results = await extract_search(input.query)
+    search_results = search_results[:5]
+
+    product_details = []
+    for result in search_results:
+        if result:
+            product = await extract_dp(result["asin"])
+            product_details.append(product)
+    return product_details
 
 
 @server.call_tool()
@@ -130,13 +164,36 @@ async def handle_call_tool(
                 ]
 
             response = "**Found the following ASINs:**\n" + "\n".join(
-                f"- {result['asin']}" for result in results if result['asin']
+                f"- {result['asin']}" for result in results if result["asin"]
             )
             return [types.TextContent(type="text", text=response)]
         except Exception as e:
             return [
                 types.TextContent(
                     type="text", text=f"Error searching for products: {str(e)}"
+                )
+            ]
+    elif name == "get_theme":
+        try:
+            theme_input = ThemeInput(**arguments)
+            product_details = await get_theme_products(theme_input)
+
+            if not product_details:
+                return [
+                    types.TextContent(
+                        type="text", text="No products found for the given theme."
+                    )
+                ]
+
+            return [
+                types.TextContent(
+                    type="json", text=json.dumps(product_details, indent=2)
+                )
+            ]
+        except Exception as e:
+            return [
+                types.TextContent(
+                    type="text", text=f"Error getting theme products: {str(e)}"
                 )
             ]
     else:

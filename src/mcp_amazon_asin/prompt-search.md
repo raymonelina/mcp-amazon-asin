@@ -14,11 +14,11 @@ keyword should be a deterministic, specific search phrase under the theme.
 theme explains what to consider, while keyword reflects a pre-selected user intent.
 Display this to the user to explain you are working on these themes.
 
-Next, for the original search query:
+Next, for the original search query, let's "Get Theme" to fetch a list of ASIN product information. It would do the following:
 
 Retrieve a list of ASINs and keep the first 2.
 
-For each of the 2 extended queries (from the keywords above), retrieve the first 2 ASINs.
+For each of the 2 extended queries (from the keywords above), retrieve the first 2 ASINs. Basically, Get Theme for the top 2 extended queries.
 
 Then, for each ASIN (from both steps), fetch product title and image link.
 

@@ -6,12 +6,11 @@ CLI for local testing of Amazon ASIN utilities
 import asyncio
 import json
 import sys
-from typing import Optional
 
 import click
 
 from .utils.setup import setup_playwright
-from .utils.search import extract_search
+from .utils.search import extract_search_asin, extract_refinements
 from .utils.dp import extract_dp
 
 
@@ -49,12 +48,12 @@ async def product(asin: str, output_json: bool):
 
 @cli.command()
 @click.argument("query")
-@click.option("--limit", default=10, help="Number of results to return")
+@click.option("--limit", default=1000, help="Number of results to return")
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 async def search(query: str, limit: int, output_json: bool):
     """Search Amazon products"""
     try:
-        results = await extract_search(query, limit)
+        results = await extract_search_asin(query, limit)
         if output_json:
             click.echo(json.dumps(results, indent=2))
         else:
@@ -71,7 +70,7 @@ async def search(query: str, limit: int, output_json: bool):
 async def theme(query: str, limit: int):
     """Get themed product recommendations"""
     try:
-        search_results = await extract_search(query, limit)
+        search_results = await extract_search_asin(query, limit)
         products = []
         for result in search_results:
             if result and result["asin"]:
@@ -79,6 +78,19 @@ async def theme(query: str, limit: int):
                 products.append(product)
 
         click.echo(json.dumps(products, indent=2))
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
+
+
+@cli.command()
+@click.argument('query')
+async def refinements(query: str):
+    """Get available refinement categories for search query"""
+    try:
+        categories = await extract_refinements(query)
+        for category in categories:
+            click.echo(category)
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)

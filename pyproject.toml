@@ -1,7 +1,7 @@
 [project]
 name = "mcp-amazon-asin"
 version = "0.1.0"
-description = "Model Context Protocol (MCP) server for fetching Amazon product information using ASIN with CLI testing tools"
+description = "Scrapes Amazon product data by ASIN, for use as a local CLI or a Model Context Provider (MCP)."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -19,17 +19,36 @@ dev = [
     "ruff>=0.12.1",
 ]
 
-
+# Specifies the build system and its requirements, as defined by PEP 517/518.
+# This tells tools like 'pip' or 'uv' how to build the project from source.
 [build-system]
-requires = ["setuptools>=61.0"]
+# Lists the packages needed to build the project (e.g., creating a wheel).
+# 'setuptools' is the core build tool, and 'wheel' is for creating .whl files.
+requires = ["setuptools>=61.0", "wheel"]
+# Defines the Python object that build frontends will use to execute the build.
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
+# Tells setuptools that the root of the package content is the 'src' directory.
+# This is a modern best practice known as the "src layout".
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
+# Configures setuptools to automatically discover all packages to include.
+# Specifies that the search for packages should start in the 'src' directory.
+# This avoids having to manually list every package (e.g., mcp_amazon_asin, mcp_amazon_asin.utils).
 where = ["src"]
 
+# The `[project.scripts]` table defines command-line shortcuts to your Python functions.
+# When you install this package, setuptools creates wrapper scripts in your environment's
+# 'bin' directory. This allows you to run your functions directly from the terminal
+# without having to use `python -m`.
+#
+# For example, after installation:
+# - Running `amazon-asin-cli` in your terminal will execute the `main` function
+#   located in the `src/mcp_amazon_asin/cli.py` file.
+#
+# This is a convenient way to expose entry points for your application, such as command-line
+# interfaces, test runners, or other utilities.
 [project.scripts]
-asin-cli = "mcp_amazon_asin.cli:main"
-asin-test = "mcp_amazon_asin.test_runner:main"
+amazon-asin-cli = "mcp_amazon_asin.cli:main"

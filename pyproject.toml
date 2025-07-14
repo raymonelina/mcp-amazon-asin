@@ -1,7 +1,7 @@
 [project]
 name = "mcp-amazon-asin"
 version = "0.1.0"
-description = "Scrapes Amazon product data by ASIN, for use as a local CLI or a Model Context Provider (MCP)."
+description = "Model Context Provider (MCP) that fetches Amazon product information using ASINs"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

@@ -122,6 +122,28 @@ Example ASIN: `B0CGXY13QW` → returns formatted product information from Amazon
 
 ---
 
+## 🖥️ CLI Usage (Optional)
+
+For local testing, you can use the CLI directly:
+
+```bash
+# Get product info by ASIN
+amazon-asin-cli product B0CGXY13QW
+
+# Search for products
+amazon-asin-cli search "wireless headphones"
+
+# Get themed product recommendations
+amazon-asin-cli theme "gaming setup"
+```
+
+Or with uv:
+```bash
+uv run amazon-asin-cli product B0CGXY13QW --json
+```
+
+---
+
 ## 🧪 Playwright Setup Notes
 
 If Playwright fails to launch Chromium:

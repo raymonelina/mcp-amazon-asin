@@ -38,13 +38,12 @@ def cli(log_level):
 
 @cli.command()
 @click.argument("asin")
-@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 @click.option(
     "--cache-folder",
     default="cache",
     help="Cache folder for JSON data (use 'none' to disable)",
 )
-async def product(asin: str, output_json: bool, cache_folder: str):
+async def product(asin: str, cache_folder: str):
     """Get product information by ASIN"""
     try:
         # Convert 'none' string to None to disable caching
@@ -52,20 +51,8 @@ async def product(asin: str, output_json: bool, cache_folder: str):
             None if cache_folder and cache_folder.lower() == "none" else cache_folder
         )
         result = await extract_dp(asin, cache_folder=cache_param)
-        if output_json:
-            click.echo(json.dumps(result, indent=2))
-        else:
-            click.echo(f"Title: {result['title']}")
-            click.echo(f"Price: {result['price']}")
-            click.echo(f"Rating: {result['rating']}")
-            click.echo(f"Sold by: {result['sold_by']}")
-            click.echo(f"Delivery date: {result['delivery_date']}")
-            click.echo(f"Delivering to: {result['delivering_to']}")
-            click.echo(f"URL: {result['url']}")
-            if result["features"]:
-                click.echo("Features:")
-                for feature in result["features"][:5]:
-                    click.echo(f"  • {feature}")
+        # Always output as JSON
+        click.echo(json.dumps(result, indent=2))
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)
@@ -74,13 +61,12 @@ async def product(asin: str, output_json: bool, cache_folder: str):
 @cli.command()
 @click.argument("query")
 @click.option("--limit", default=1000, help="Number of results to return")
-@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 @click.option(
     "--cache-folder",
     default="cache",
     help="Cache folder for JSON data (use 'none' to disable)",
 )
-async def search(query: str, limit: int, output_json: bool, cache_folder: str):
+async def search(query: str, limit: int, cache_folder: str):
     """Search Amazon products"""
     try:
         # Convert 'none' string to None to disable caching
@@ -88,11 +74,8 @@ async def search(query: str, limit: int, output_json: bool, cache_folder: str):
             None if cache_folder and cache_folder.lower() == "none" else cache_folder
         )
         results = await extract_search_asin(query, limit, cache_param)
-        if output_json:
-            click.echo(json.dumps(results, indent=2))
-        else:
-            for result in results:
-                click.echo(f"{result['asin']}: {result['title']}")
+        # Always output as JSON
+        click.echo(json.dumps(results, indent=2))
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)

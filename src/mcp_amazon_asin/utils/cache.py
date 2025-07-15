@@ -6,16 +6,13 @@ import json
 import logging
 import os
 import time
-from typing import Any, TypeVar
+from typing import Any
 
 # Configure logger
 logger = logging.getLogger(__name__)
 
 # Cache expiration time in seconds (1 hour)
 CACHE_EXPIRATION_SECONDS = 3600
-
-# Type for cached data
-T = TypeVar("T", bound=dict[str, Any])
 
 
 def get_from_cache(

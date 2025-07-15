@@ -4,23 +4,26 @@ CLI for local testing of Amazon ASIN utilities
 """
 
 import asyncio
+import inspect
 import json
-import sys
 import logging
+import sys
 
 import click
 
-from .utils.setup import setup_playwright
-from .utils.search import extract_search_asin, extract_refinements
 from .utils.dp import extract_dp
+from .utils.search import extract_refinements, extract_search_asin
+from .utils.setup import setup_playwright
 
 
 @click.group()
 @click.option(
     "--log-level",
-    type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], case_sensitive=False),
+    type=click.Choice(
+        ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], case_sensitive=False
+    ),
     default="INFO",
-    help="Set the logging level"
+    help="Set the logging level",
 )
 def cli(log_level):
     """Amazon ASIN CLI for local testing"""
@@ -77,9 +80,7 @@ async def product(asin: str, output_json: bool, cache_folder: str):
     default="cache",
     help="Cache folder for JSON data (use 'none' to disable)",
 )
-async def search(
-    query: str, limit: int, output_json: bool, cache_folder: str
-):
+async def search(query: str, limit: int, output_json: bool, cache_folder: str):
     """Search Amazon products"""
     try:
         # Convert 'none' string to None to disable caching
@@ -110,9 +111,7 @@ async def search(
     default="cache",
     help="Cache folder for JSON data (use 'none' to disable)",
 )
-async def theme(
-    query: str, limit: int, batch_size: int, cache_folder: str
-):
+async def theme(query: str, limit: int, batch_size: int, cache_folder: str):
     """Get themed product recommendations"""
     try:
         # Convert 'none' string to None to disable caching
@@ -121,9 +120,7 @@ async def theme(
         )
 
         # Step 1: Get search results using the limit parameter
-        search_results = await extract_search_asin(
-            query, limit, cache_param
-        )
+        search_results = await extract_search_asin(query, limit, cache_param)
 
         # Step 2: Get all ASINs and process them in batches
         asins = [
@@ -145,10 +142,7 @@ async def theme(
                     err=True,
                 )
                 batch_products = await asyncio.gather(
-                    *[
-                        extract_dp(asin, cache_folder=cache_param)
-                        for asin in batch
-                    ]
+                    *[extract_dp(asin, cache_folder=cache_param) for asin in batch]
                 )
                 products.extend(batch_products)
 
@@ -173,11 +167,9 @@ async def refinements(query: str):
 
 
 def main():
-    """Async wrapper for CLI"""
-    import inspect
 
     # Convert async commands to sync
-    for name, cmd in cli.commands.items():
+    for _, cmd in cli.commands.items():
         if inspect.iscoroutinefunction(cmd.callback):
             original_callback = cmd.callback
             cmd.callback = (

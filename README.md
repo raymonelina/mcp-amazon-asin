@@ -196,3 +196,17 @@ playwright install chromium
 ```
 
 ---
+
+## 🧹 Code Quality
+
+This project uses Ruff for linting and Black for code formatting. To maintain code quality:
+
+```bash
+# Lint and auto-fix issues (e.g., import order)
+ruff check . --fix
+
+# Format code
+black .
+```
+
+---

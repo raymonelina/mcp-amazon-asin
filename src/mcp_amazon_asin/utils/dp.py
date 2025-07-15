@@ -1,25 +1,21 @@
-import os
-import json
-import time
 import logging
+import time
 
 from playwright.async_api import async_playwright
+
 from mcp_amazon_asin.utils import get_amazon_detail_page_url
-from mcp_amazon_asin.utils.fields import REQUIRED_PRODUCT_FIELDS, PRODUCT_FIELDS
+from mcp_amazon_asin.utils.cache import get_from_cache, save_to_cache
+from mcp_amazon_asin.utils.fields import PRODUCT_FIELDS, REQUIRED_PRODUCT_FIELDS
 
 # Configure logger
 logger = logging.getLogger(__name__)
-
-
-# Cache expiration time in seconds (1 hour)
-CACHE_EXPIRATION_SECONDS = 3600
 
 
 async def extract_dp(
     asin: str, cache_folder: str = "cache", verbose: bool = False
 ) -> dict:
     """Fetch product details from Amazon using ASIN
-    
+
     Args:
         asin: Amazon Standard Identification Number
         cache_folder: Folder to store cached data (use 'none' to disable)
@@ -29,39 +25,12 @@ async def extract_dp(
     url = get_amazon_detail_page_url(asin)
 
     # Check cache if enabled
-    if cache_folder:
-        os.makedirs(cache_folder, exist_ok=True)
-        json_path = f"{cache_folder}/{asin}.json"
+    cached_data = get_from_cache(asin, cache_folder, REQUIRED_PRODUCT_FIELDS)
+    if cached_data:
+        return cached_data
 
-        if os.path.exists(json_path):
-            try:
-                with open(json_path, "r") as f:
-                    cached_data = json.load(f)
+    logger.debug(f"Fetching data for {asin} from Amazon (cache not used)")
 
-                # Check if timestamp exists and is within expiration period
-                if "timestamp" in cached_data:
-                    cache_time = cached_data["timestamp"]
-                    current_time = int(time.time())
-
-                    if current_time - cache_time <= CACHE_EXPIRATION_SECONDS:
-                        # Validate all required fields are present
-                        valid_cache = True
-                        for field in REQUIRED_PRODUCT_FIELDS:
-                            if field not in cached_data or cached_data[field] is None:
-                                valid_cache = False
-                                logger.debug(f"Cache invalid for {asin}: missing field {field}")
-                                break
-
-                        if valid_cache:
-                            logger.info(f"Using cached data for {asin} (age: {current_time - cache_time} seconds)")
-                            return cached_data
-                    else:
-                        logger.debug(f"Cache expired for {asin} (age: {current_time - cache_time} seconds)")
-            except Exception as e:
-                logger.error(f"Error reading cache for {asin}: {str(e)}")
-
-    logger.info(f"Fetching data for {asin} from Amazon (cache not used)")
-        
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
@@ -153,13 +122,6 @@ async def extract_dp(
     product_data["timestamp"] = int(time.time())
 
     # Save to cache if enabled
-    if cache_folder:
-        try:
-            json_path = f"{cache_folder}/{asin}.json"
-            with open(json_path, "w") as f:
-                json.dump(product_data, f, indent=2)
-            logger.info(f"Saved {asin} to cache")
-        except Exception as e:
-            logger.error(f"Error saving cache for {asin}: {str(e)}")
+    save_to_cache(asin, product_data, cache_folder)
 
     return product_data

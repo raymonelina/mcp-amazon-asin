@@ -1,6 +1,7 @@
 import logging
 from playwright.async_api import async_playwright
 from mcp_amazon_asin.utils import get_amazon_search_page_url
+from mcp_amazon_asin.utils.cache import get_from_cache, save_to_cache
 
 # Configure logger
 logger = logging.getLogger(__name__)

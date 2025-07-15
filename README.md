@@ -132,6 +132,10 @@ For local testing, you can use the CLI directly:
 - `refinements` - Get available refinement categories for search query
 - `theme` - Get themed product recommendations
 
+**Common Options:**
+- `--cache-folder` - Cache folder for JSON data (default: "cache", use 'none' to disable)
+- `--log-level` - Set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL, default: INFO)
+
 ### Option A: Using uv run (Recommended)
 ```bash
 # No activation needed - uv automatically manages the environment
@@ -140,8 +144,8 @@ uv run amazon-asin-cli search "wireless headphones"
 uv run amazon-asin-cli refinements "wireless headphones"
 uv run amazon-asin-cli theme "gaming setup" --limit 10 --batch-size 5
 
-# Save product screenshots during search
-uv run amazon-asin-cli search "wireless headphones" --limit 5 --screenshot-folder ./screenshots
+# Use custom cache folder
+uv run amazon-asin-cli search "wireless headphones" --limit 5 --cache-folder ./my-cache
 ```
 
 ### Option B: Activate virtual environment first
@@ -155,23 +159,29 @@ amazon-asin-cli search "wireless headphones"
 amazon-asin-cli refinements "wireless headphones"
 amazon-asin-cli theme "gaming setup" --limit 10 --batch-size 5
 
-# Save product screenshots during search
-amazon-asin-cli search "wireless headphones" --limit 5 --screenshot-folder ./screenshots
+# Use custom cache folder
+amazon-asin-cli search "wireless headphones" --limit 5 --cache-folder ./my-cache
 
 # Step 3: Deactivate when done
 deactivate
 ```
 
-### Screenshot Options
+### Cache and Verbose Options
 ```bash
-# No screenshots (default)
+# Use default cache folder ("cache")
 amazon-asin-cli search "wireless headphones" --limit 5
 
-# Save screenshots to specific folder
-amazon-asin-cli search "wireless headphones" --limit 5 --screenshot-folder ./images
+# Disable caching
+amazon-asin-cli search "wireless headphones" --cache-folder none
 
-# Save screenshots to current directory
-amazon-asin-cli search "wireless headphones" --limit 5 --screenshot-folder .
+# Use custom cache folder
+amazon-asin-cli search "wireless headphones" --cache-folder ./my-cache
+
+# Set logging level for detailed output
+amazon-asin-cli --log-level DEBUG search "wireless headphones"
+
+# Set logging level for minimal output
+amazon-asin-cli --log-level WARNING search "wireless headphones"
 ```
 
 **Note:** If `amazon-asin-cli` command is not found, make sure you've activated the virtual environment or use `uv run`.

@@ -6,6 +6,7 @@ CLI for local testing of Amazon ASIN utilities
 import asyncio
 import json
 import sys
+import logging
 
 import click
 
@@ -15,18 +16,39 @@ from .utils.dp import extract_dp
 
 
 @click.group()
-def cli():
+@click.option(
+    "--log-level",
+    type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], case_sensitive=False),
+    default="INFO",
+    help="Set the logging level"
+)
+def cli(log_level):
     """Amazon ASIN CLI for local testing"""
+    # Configure logging based on specified level
+    numeric_level = getattr(logging, log_level.upper())
+    logging.basicConfig(
+        level=numeric_level,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
     setup_playwright()
 
 
 @cli.command()
 @click.argument("asin")
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
-async def product(asin: str, output_json: bool):
+@click.option(
+    "--cache-folder",
+    default="cache",
+    help="Cache folder for JSON data (use 'none' to disable)",
+)
+async def product(asin: str, output_json: bool, cache_folder: str):
     """Get product information by ASIN"""
     try:
-        result = await extract_dp(asin)
+        # Convert 'none' string to None to disable caching
+        cache_param = (
+            None if cache_folder and cache_folder.lower() == "none" else cache_folder
+        )
+        result = await extract_dp(asin, cache_folder=cache_param)
         if output_json:
             click.echo(json.dumps(result, indent=2))
         else:
@@ -50,11 +72,21 @@ async def product(asin: str, output_json: bool):
 @click.argument("query")
 @click.option("--limit", default=1000, help="Number of results to return")
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
-@click.option("--screenshot-folder", default=None, help="Folder to save product screenshots (optional)")
-async def search(query: str, limit: int, output_json: bool, screenshot_folder: str):
+@click.option(
+    "--cache-folder",
+    default="cache",
+    help="Cache folder for JSON data (use 'none' to disable)",
+)
+async def search(
+    query: str, limit: int, output_json: bool, cache_folder: str
+):
     """Search Amazon products"""
     try:
-        results = await extract_search_asin(query, limit, screenshot_folder)
+        # Convert 'none' string to None to disable caching
+        cache_param = (
+            None if cache_folder and cache_folder.lower() == "none" else cache_folder
+        )
+        results = await extract_search_asin(query, limit, cache_param)
         if output_json:
             click.echo(json.dumps(results, indent=2))
         else:
@@ -73,12 +105,25 @@ async def search(query: str, limit: int, output_json: bool, screenshot_folder: s
     default=10,
     help="Number of products to process in parallel per batch",
 )
-@click.option("--screenshot-folder", help="Folder to save product screenshots")
-async def theme(query: str, limit: int, batch_size: int, screenshot_folder: str):
+@click.option(
+    "--cache-folder",
+    default="cache",
+    help="Cache folder for JSON data (use 'none' to disable)",
+)
+async def theme(
+    query: str, limit: int, batch_size: int, cache_folder: str
+):
     """Get themed product recommendations"""
     try:
+        # Convert 'none' string to None to disable caching
+        cache_param = (
+            None if cache_folder and cache_folder.lower() == "none" else cache_folder
+        )
+
         # Step 1: Get search results using the limit parameter
-        search_results = await extract_search_asin(query, limit, screenshot_folder)
+        search_results = await extract_search_asin(
+            query, limit, cache_param
+        )
 
         # Step 2: Get all ASINs and process them in batches
         asins = [
@@ -100,7 +145,10 @@ async def theme(query: str, limit: int, batch_size: int, screenshot_folder: str)
                     err=True,
                 )
                 batch_products = await asyncio.gather(
-                    *[extract_dp(asin) for asin in batch]
+                    *[
+                        extract_dp(asin, cache_folder=cache_param)
+                        for asin in batch
+                    ]
                 )
                 products.extend(batch_products)
 

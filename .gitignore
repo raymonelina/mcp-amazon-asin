@@ -109,3 +109,7 @@ dist/
 .LSOverride
 Icon?
 
+# -------------------------------
+# Local Cache (default)
+# -------------------------------
+cache/

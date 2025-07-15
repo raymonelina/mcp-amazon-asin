@@ -1,15 +1,19 @@
+import logging
 from playwright.async_api import async_playwright
 from mcp_amazon_asin.utils import get_amazon_search_page_url
 
+# Configure logger
+logger = logging.getLogger(__name__)
 
-async def extract_search_asin(query: str, limit: int = 100, screenshot_folder: str = None) -> list[dict]:
+
+async def extract_search_asin(query: str, limit: int = 100, cache_folder: str = "cache") -> list[dict]:
     """Extracts search result summaries for a given Amazon search query (fast version)"""
     url = get_amazon_search_page_url(query)
     
-    # Create screenshot folder if specified
-    if screenshot_folder:
-        import os
-        os.makedirs(screenshot_folder, exist_ok=True)
+    logger.info(f"Searching Amazon for '{query}' (limit: {limit})")
+    
+    # No screenshot folder in this version, using cache_folder instead
+    screenshot_folder = None
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
@@ -72,10 +76,14 @@ async def extract_search_asin(query: str, limit: int = 100, screenshot_folder: s
                 continue
 
         await browser.close()
+        logger.info(f"Found {len(results)} results for '{query}'")
         return results
 
 
 async def extract_refinements(query: str) -> list[dict]:
+    """Extracts available refinement categories from Amazon search page sidebar"""
+    logger.info(f"Extracting refinement categories for '{query}'")
+    
     """Extracts available refinement categories from Amazon search page sidebar (fast version)"""
     url = get_amazon_search_page_url(query)
 
@@ -127,4 +135,5 @@ async def extract_refinements(query: str) -> list[dict]:
             refinements = []
 
         await browser.close()
+        logger.info(f"Found {len(refinements)} refinement categories for '{query}'")
         return refinements

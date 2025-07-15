@@ -50,10 +50,11 @@ async def product(asin: str, output_json: bool):
 @click.argument("query")
 @click.option("--limit", default=1000, help="Number of results to return")
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
-async def search(query: str, limit: int, output_json: bool):
+@click.option("--screenshot-folder", default=None, help="Folder to save product screenshots (optional)")
+async def search(query: str, limit: int, output_json: bool, screenshot_folder: str):
     """Search Amazon products"""
     try:
-        results = await extract_search_asin(query, limit)
+        results = await extract_search_asin(query, limit, screenshot_folder)
         if output_json:
             click.echo(json.dumps(results, indent=2))
         else:
@@ -72,11 +73,12 @@ async def search(query: str, limit: int, output_json: bool):
     default=10,
     help="Number of products to process in parallel per batch",
 )
-async def theme(query: str, limit: int, batch_size: int):
+@click.option("--screenshot-folder", help="Folder to save product screenshots")
+async def theme(query: str, limit: int, batch_size: int, screenshot_folder: str):
     """Get themed product recommendations"""
     try:
         # Step 1: Get search results using the limit parameter
-        search_results = await extract_search_asin(query, limit)
+        search_results = await extract_search_asin(query, limit, screenshot_folder)
 
         # Step 2: Get all ASINs and process them in batches
         asins = [

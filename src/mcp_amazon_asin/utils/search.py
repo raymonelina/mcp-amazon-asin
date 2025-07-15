@@ -2,9 +2,14 @@ from playwright.async_api import async_playwright
 from mcp_amazon_asin.utils import get_amazon_search_page_url
 
 
-async def extract_search_asin(query: str, limit: int = 100) -> list[dict]:
+async def extract_search_asin(query: str, limit: int = 100, screenshot_folder: str = None) -> list[dict]:
     """Extracts search result summaries for a given Amazon search query (fast version)"""
     url = get_amazon_search_page_url(query)
+    
+    # Create screenshot folder if specified
+    if screenshot_folder:
+        import os
+        os.makedirs(screenshot_folder, exist_ok=True)
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
@@ -54,7 +59,14 @@ async def extract_search_asin(query: str, limit: int = 100) -> list[dict]:
                     }
                     """
                 )
-                if data:
+                if data and data.get('asin'):
+                    # Take screenshot if folder specified
+                    if screenshot_folder:
+                        try:
+                            await item.screenshot(path=f"{screenshot_folder}/{data['asin']}.png")
+                        except Exception:
+                            pass  # Continue if screenshot fails
+                    
                     results.append(data)
             except Exception:
                 continue

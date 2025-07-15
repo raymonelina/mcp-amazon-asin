@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 
 
 from .utils.setup import setup_playwright
-from .utils.search import extract_search
+from .utils.search import extract_search_asin
 from .utils.dp import extract_dp
 
 
@@ -154,7 +154,7 @@ async def handle_call_tool(
     elif name == "search_amazon":
         try:
             search_input = SearchInput(**arguments)
-            results = await extract_search(search_input.query)
+            results = await extract_search_asin(search_input.query)
 
             if not results:
                 return [

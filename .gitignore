@@ -90,6 +90,11 @@ pytest_cache/
 *.bak
 
 # -------------------------------
+# Screenshots
+# -------------------------------
+*.png
+
+# -------------------------------
 # Node.js artifacts (if using frontend or docs)
 # -------------------------------
 node_modules/

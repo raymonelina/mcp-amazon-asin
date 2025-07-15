@@ -132,24 +132,49 @@ For local testing, you can use the CLI directly:
 - `refinements` - Get available refinement categories for search query
 - `theme` - Get themed product recommendations
 
+### Option A: Using uv run (Recommended)
 ```bash
-# Get product info by ASIN
+# No activation needed - uv automatically manages the environment
+uv run amazon-asin-cli product B0CGXY13QW
+uv run amazon-asin-cli search "wireless headphones"
+uv run amazon-asin-cli refinements "wireless headphones"
+uv run amazon-asin-cli theme "gaming setup" --limit 10 --batch-size 5
+
+# Save product screenshots during search
+uv run amazon-asin-cli search "wireless headphones" --limit 5 --screenshot-folder ./screenshots
+```
+
+### Option B: Activate virtual environment first
+```bash
+# Step 1: Activate the virtual environment
+source .venv/bin/activate
+
+# Step 2: Use CLI commands directly
 amazon-asin-cli product B0CGXY13QW
-
-# Search for products
 amazon-asin-cli search "wireless headphones"
-
-# Get refinement categories for a search
 amazon-asin-cli refinements "wireless headphones"
+amazon-asin-cli theme "gaming setup" --limit 10 --batch-size 5
 
-# Get themed product recommendations
-amazon-asin-cli theme "gaming setup"
+# Save product screenshots during search
+amazon-asin-cli search "wireless headphones" --limit 5 --screenshot-folder ./screenshots
+
+# Step 3: Deactivate when done
+deactivate
 ```
 
-Or with uv:
+### Screenshot Options
 ```bash
-uv run amazon-asin-cli product B0CGXY13QW --json
+# No screenshots (default)
+amazon-asin-cli search "wireless headphones" --limit 5
+
+# Save screenshots to specific folder
+amazon-asin-cli search "wireless headphones" --limit 5 --screenshot-folder ./images
+
+# Save screenshots to current directory
+amazon-asin-cli search "wireless headphones" --limit 5 --screenshot-folder .
 ```
+
+**Note:** If `amazon-asin-cli` command is not found, make sure you've activated the virtual environment or use `uv run`.
 
 ---
 

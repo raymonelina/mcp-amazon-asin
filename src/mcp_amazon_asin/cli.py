@@ -138,12 +138,21 @@ async def theme(query: str, limit: int, batch_size: int, cache_folder: str):
 
 @cli.command()
 @click.argument("query")
-async def refinements(query: str):
+@click.option(
+    "--cache-folder",
+    default="cache",
+    help="Cache folder for JSON data (use 'none' to disable)",
+)
+async def refinements(query: str, cache_folder: str):
     """Get available refinement categories for search query"""
     try:
+        # Convert 'none' string to None to disable caching
+        cache_param = (
+            None if cache_folder and cache_folder.lower() == "none" else cache_folder
+        )
         categories = await extract_refinements(query)
-        for category in categories:
-            click.echo(category)
+        # Always output as JSON
+        click.echo(json.dumps(categories, indent=2))
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)

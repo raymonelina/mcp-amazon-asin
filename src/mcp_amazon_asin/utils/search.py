@@ -1,20 +1,27 @@
 import logging
+import os
 from playwright.async_api import async_playwright
 from mcp_amazon_asin.utils import get_amazon_search_page_url
-from mcp_amazon_asin.utils.cache import get_from_cache, save_to_cache
 
 # Configure logger
 logger = logging.getLogger(__name__)
 
 
-async def extract_search_asin(query: str, limit: int = 100, cache_folder: str = "cache") -> list[dict]:
+async def extract_search_asin(
+    query: str, limit: int = 100, cache_folder: str = "cache"
+) -> list[dict]:
     """Extracts search result summaries for a given Amazon search query (fast version)"""
     url = get_amazon_search_page_url(query)
-    
-    logger.info(f"Searching Amazon for '{query}' (limit: {limit})")
-    
-    # No screenshot folder in this version, using cache_folder instead
-    screenshot_folder = None
+
+    logger.debug(f"Searching Amazon for '{query}' (limit: {limit})")
+
+    # Handle cache_folder parameter (used for screenshots)
+    if cache_folder and cache_folder.lower() == "none":
+        cache_folder = None
+
+    # Create cache directory if it doesn't exist
+    if cache_folder:
+        os.makedirs(cache_folder, exist_ok=True)
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
@@ -64,14 +71,20 @@ async def extract_search_asin(query: str, limit: int = 100, cache_folder: str = 
                     }
                     """
                 )
-                if data and data.get('asin'):
-                    # Take screenshot if folder specified
-                    if screenshot_folder:
+                if data and data.get("asin"):
+                    # Save screenshot if cache_folder is specified
+                    if cache_folder and data.get("asin"):
                         try:
-                            await item.screenshot(path=f"{screenshot_folder}/{data['asin']}.png")
-                        except Exception:
-                            pass  # Continue if screenshot fails
-                    
+                            await item.screenshot(
+                                path=f"{cache_folder}/{data['asin']}.png"
+                            )
+                            logger.debug(f"Saved screenshot for {data['asin']}")
+                        except Exception as e:
+                            logger.debug(
+                                f"Failed to save screenshot for {data['asin']}: {e}"
+                            )
+                            # Continue if screenshot fails
+
                     results.append(data)
             except Exception:
                 continue
@@ -84,7 +97,7 @@ async def extract_search_asin(query: str, limit: int = 100, cache_folder: str = 
 async def extract_refinements(query: str) -> list[dict]:
     """Extracts available refinement categories from Amazon search page sidebar"""
     logger.info(f"Extracting refinement categories for '{query}'")
-    
+
     """Extracts available refinement categories from Amazon search page sidebar (fast version)"""
     url = get_amazon_search_page_url(query)
 
@@ -121,8 +134,8 @@ async def extract_refinements(query: str) -> list[dict]:
                             if (id && id.trim().length > 0 && innerText) {
                                 const textLines = innerText.split('\\n').map(line => line.trim()).filter(line => line.length > 0);
                                 refinementPairs.push({
-                                    id: id.trim(),
-                                    text: textLines
+                                    type: id.trim(),
+                                    refinements: textLines
                                 });
                             }
                         });

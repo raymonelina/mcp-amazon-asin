@@ -85,7 +85,7 @@ async def extract_dp(
 
         try:
             delivery_date = await page.locator(
-                "#mir-layout-DELIVERY_BLOCK span[data-csa-c-type='element'], #deliveryBlockMessage, [data-feature-name='delivery'] span"
+                "#mir-layout-DELIVERY_BLOCK span[data-csa-c-type='element']"
             ).first.text_content()
         except Exception:
             delivery_date = None
@@ -113,15 +113,27 @@ async def extract_dp(
         PRODUCT_FIELDS.delivering_to: delivering_to.strip() if delivering_to else None,
     }
 
+    # Flag to determine if we should cache the data
+    should_cache = True
+
     # Verify all required fields are present
     for field in REQUIRED_PRODUCT_FIELDS:
         if field not in product_data:
             product_data[field] = None
+        # Check if critical fields are empty
+        elif product_data[field] is None:
+            # Don't cache if delivering_to is empty
+            if field == PRODUCT_FIELDS.delivering_to:
+                should_cache = False
+                logger.debug(f"Not caching {asin}: delivering_to is empty")
 
     # Add timestamp for cache expiration
     product_data["timestamp"] = int(time.time())
 
     # Save to cache if enabled
-    save_to_cache(asin, product_data, cache_folder)
+    if should_cache and cache_folder:
+        save_to_cache(asin, product_data, cache_folder)
+    else:
+        logger.debug(f"Skipping cache for {asin} due to missing critical fields")
 
     return product_data

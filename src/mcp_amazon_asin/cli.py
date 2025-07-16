@@ -159,7 +159,6 @@ async def refinements(query: str, cache_folder: str):
 
 
 def main():
-
     # Convert async commands to sync
     for _, cmd in cli.commands.items():
         if inspect.iscoroutinefunction(cmd.callback):

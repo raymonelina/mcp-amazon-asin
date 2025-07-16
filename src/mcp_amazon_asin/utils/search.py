@@ -90,13 +90,13 @@ async def extract_search_asin(
                 continue
 
         await browser.close()
-        logger.info(f"Found {len(results)} results for '{query}'")
+        logger.debug(f"Found {len(results)} results for '{query}'")
         return results
 
 
 async def extract_refinements(query: str) -> list[dict]:
     """Extracts available refinement categories from Amazon search page sidebar"""
-    logger.info(f"Extracting refinement categories for '{query}'")
+    logger.debug(f"Extracting refinement categories for '{query}'")
 
     """Extracts available refinement categories from Amazon search page sidebar (fast version)"""
     url = get_amazon_search_page_url(query)
@@ -149,5 +149,5 @@ async def extract_refinements(query: str) -> list[dict]:
             refinements = []
 
         await browser.close()
-        logger.info(f"Found {len(refinements)} refinement categories for '{query}'")
+        logger.debug(f"Found {len(refinements)} refinement categories for '{query}'")
         return refinements

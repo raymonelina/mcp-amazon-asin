@@ -5,7 +5,12 @@ from playwright.async_api import async_playwright
 
 from mcp_amazon_asin.utils import get_amazon_detail_page_url
 from mcp_amazon_asin.utils.cache import get_from_cache, save_to_cache
-from mcp_amazon_asin.utils.fields import PRODUCT_FIELDS, REQUIRED_PRODUCT_FIELDS
+from mcp_amazon_asin.utils.fields import (
+    ALL_PRODUCT_FIELDS,
+    OPTIONAL_PRODUCT_FIELDS,
+    PRODUCT_FIELDS,
+    REQUIRED_PRODUCT_FIELDS,
+)
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -27,6 +32,12 @@ async def extract_dp(
     # Check cache if enabled
     cached_data = get_from_cache(asin, cache_folder, REQUIRED_PRODUCT_FIELDS)
     if cached_data:
+        # Log if optional fields are missing in cached data
+        for field in OPTIONAL_PRODUCT_FIELDS:
+            if field not in cached_data or cached_data[field] is None:
+                logger.debug(
+                    f"Note: optional field '{field}' is empty for {asin} in cache"
+                )
         return cached_data
 
     logger.debug(f"Fetching data for {asin} from Amazon (cache not used)")
@@ -116,16 +127,23 @@ async def extract_dp(
     # Flag to determine if we should cache the data
     should_cache = True
 
-    # Verify all required fields are present
-    for field in REQUIRED_PRODUCT_FIELDS:
+    # Verify all fields are present (both required and optional)
+    for field in ALL_PRODUCT_FIELDS:
         if field not in product_data:
             product_data[field] = None
-        # Check if critical fields are empty
-        elif product_data[field] is None:
-            # Don't cache if delivering_to is empty
-            if field == PRODUCT_FIELDS.delivering_to:
-                should_cache = False
-                logger.debug(f"Not caching {asin}: delivering_to is empty")
+
+    # Check required fields - these must not be None for caching
+    for field in REQUIRED_PRODUCT_FIELDS:
+        if product_data[field] is None:
+            should_cache = False
+            logger.debug(f"Not caching {asin}: required field '{field}' is empty")
+
+    # Log optional fields that are empty but don't prevent caching
+    for field in OPTIONAL_PRODUCT_FIELDS:
+        if product_data[field] is None:
+            logger.debug(
+                f"Note: optional field '{field}' is empty for {asin}, but caching is still allowed"
+            )
 
     # Add timestamp for cache expiration
     product_data["timestamp"] = int(time.time())

@@ -11,8 +11,8 @@ from typing import Any
 # Configure logger
 logger = logging.getLogger(__name__)
 
-# Cache expiration time in seconds (1 hour)
-CACHE_EXPIRATION_SECONDS = 3600
+# Cache expiration time in seconds (24 hour)
+CACHE_EXPIRATION_SECONDS = 3600 * 24
 
 
 def get_from_cache(

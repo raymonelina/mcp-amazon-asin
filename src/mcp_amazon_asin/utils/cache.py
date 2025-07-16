@@ -98,7 +98,7 @@ def save_to_cache(
 
     try:
         with open(json_path, "w") as f:
-            json.dump(data, f, indent=2)
+            json.dump(data, f, indent=2, ensure_ascii=False)
         logger.debug(f"Saved {key} to cache")
         return True
     except Exception as e:

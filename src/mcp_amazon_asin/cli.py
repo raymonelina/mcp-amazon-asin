@@ -52,7 +52,7 @@ async def product(asin: str, cache_folder: str):
         )
         result = await extract_dp(asin, cache_folder=cache_param)
         # Always output as JSON
-        click.echo(json.dumps(result, indent=2))
+        click.echo(json.dumps(result, indent=2, ensure_ascii=False))
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)
@@ -75,7 +75,7 @@ async def search(query: str, limit: int, cache_folder: str):
         )
         results = await extract_search_asin(query, limit, cache_param)
         # Always output as JSON
-        click.echo(json.dumps(results, indent=2))
+        click.echo(json.dumps(results, indent=2, ensure_ascii=False))
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)
@@ -130,7 +130,7 @@ async def theme(query: str, limit: int, batch_size: int, cache_folder: str):
                 products.extend(batch_products)
 
         # Step 3: Output the list of detailed products
-        click.echo(json.dumps(products, indent=2))
+        click.echo(json.dumps(products, indent=2, ensure_ascii=False))
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)
@@ -152,7 +152,7 @@ async def refinements(query: str, cache_folder: str):
         )
         categories = await extract_refinements(query)
         # Always output as JSON
-        click.echo(json.dumps(categories, indent=2))
+        click.echo(json.dumps(categories, indent=2, ensure_ascii=False))
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)

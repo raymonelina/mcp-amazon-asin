@@ -347,6 +347,7 @@ dependencies = [
     { name = "mcp" },
     { name = "playwright" },
     { name = "pydantic" },
+    { name = "python-dotenv" },
 ]
 
 [package.dev-dependencies]
@@ -364,6 +365,7 @@ requires-dist = [
     { name = "mcp", specifier = ">=1.10.1" },
     { name = "playwright", specifier = ">=1.53.0" },
     { name = "pydantic", specifier = ">=2.11.7" },
+    { name = "python-dotenv", specifier = ">=1.0.0" },
 ]
 
 [package.metadata.requires-dev]

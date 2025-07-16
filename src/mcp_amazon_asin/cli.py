@@ -12,6 +12,7 @@ import sys
 import click
 
 from .utils.dp import extract_dp
+from .utils.prompt import chat_with_gemini
 from .utils.search import extract_refinements, extract_search_asin
 from .utils.setup import setup_playwright
 
@@ -153,6 +154,33 @@ async def refinements(query: str, cache_folder: str):
         categories = await extract_refinements(query)
         # Always output as JSON
         click.echo(json.dumps(categories, indent=2, ensure_ascii=False))
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
+
+
+@cli.command()
+@click.argument("prompt")
+@click.option(
+    "--raw",
+    is_flag=True,
+    help="Output raw text instead of JSON",
+)
+async def chat(prompt: str, raw: bool):
+    """Chat with Gemini AI using the provided prompt"""
+    try:
+        response = await chat_with_gemini(prompt)
+        
+        if raw:
+            # Output raw text
+            click.echo(response)
+        else:
+            # Output as JSON
+            result = {
+                "prompt": prompt,
+                "response": response
+            }
+            click.echo(json.dumps(result, indent=2, ensure_ascii=False))
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)

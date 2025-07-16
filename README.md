@@ -131,6 +131,7 @@ For local testing, you can use the CLI directly:
 - `search` - Search Amazon products
 - `refinements` - Get available refinement categories for search query
 - `theme` - Get themed product recommendations
+- `chat` - Chat with Gemini AI using the provided prompt
 
 **Common Options:**
 - `--cache-folder` - Cache folder for JSON data (default: "cache", use 'none' to disable)
@@ -143,6 +144,7 @@ uv run amazon-asin-cli product B0CGXY13QW
 uv run amazon-asin-cli search "wireless headphones"
 uv run amazon-asin-cli refinements "wireless headphones"
 uv run amazon-asin-cli theme "gaming setup" --limit 10 --batch-size 5
+uv run amazon-asin-cli chat "Tell me about Amazon ASINs"
 
 # Use custom cache folder
 uv run amazon-asin-cli search "wireless headphones" --limit 5 --cache-folder ./my-cache
@@ -158,6 +160,8 @@ amazon-asin-cli product B0CGXY13QW
 amazon-asin-cli search "wireless headphones"
 amazon-asin-cli refinements "wireless headphones"
 amazon-asin-cli theme "gaming setup" --limit 10 --batch-size 5
+amazon-asin-cli chat "Tell me about Amazon ASINs"
+amazon-asin-cli chat "What are the best wireless headphones?" --raw
 
 # Use custom cache folder
 amazon-asin-cli search "wireless headphones" --limit 5 --cache-folder ./my-cache
@@ -185,6 +189,31 @@ amazon-asin-cli --log-level WARNING search "wireless headphones"
 ```
 
 **Note:** If `amazon-asin-cli` command is not found, make sure you've activated the virtual environment or use `uv run`.
+
+### Gemini AI Chat Command
+
+The `chat` command allows you to interact with Google's Gemini AI model directly from the CLI:
+
+```bash
+# Basic usage (returns JSON with prompt and response)
+amazon-asin-cli chat "Tell me about Amazon ASINs"
+
+# Raw output (returns only the model's response text)
+amazon-asin-cli chat "What are the best wireless headphones?" --raw
+```
+
+**Setup Requirements:**
+1. Create a `.env` file in the project root with your Gemini API key:
+   ```
+   GEMINI_API_KEY=your_actual_api_key_here
+   GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta
+   GEMINI_MODEL=gemini-pro
+   ```
+
+2. Get a Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+
+**Options:**
+- `--raw` - Output raw text response instead of JSON format
 
 ---
 

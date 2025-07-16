@@ -9,6 +9,8 @@ dependencies = [
     "playwright>=1.53.0",
     "pydantic>=2.11.7",
     "click>=8.0.0",
+    "google-genai>=1.25.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [dependency-groups]

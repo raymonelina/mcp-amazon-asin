@@ -12,7 +12,6 @@ import sys
 
 import click
 
-import mcp_amazon_asin
 from .utils.dp import extract_dp
 from .utils.prompt import chat_with_gemini
 from .utils.search import (
@@ -21,29 +20,10 @@ from .utils.search import (
     extract_themed_products,
 )
 from .utils.setup import setup_playwright
+from .utils.utils import load_prompt_template
 
 
-def load_prompt_template(template_name: str) -> str:
-    """
-    Load a prompt template from the prompt folder.
 
-    Args:
-        template_name: Name of the template file (without extension)
-
-    Returns:
-        The template content as a string
-    """
-    # Use package-relative path for prompt files
-    package_dir = os.path.dirname(mcp_amazon_asin.__file__)
-    prompt_path = os.path.join(package_dir, "prompt", f"{template_name}.txt")
-
-    try:
-        with open(prompt_path, "r", encoding="utf-8") as f:
-            return f.read()
-    except FileNotFoundError:
-        raise FileNotFoundError(
-            f"Prompt template '{template_name}.txt' not found in the prompt folder"
-        )
 
 
 @click.group()

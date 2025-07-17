@@ -164,7 +164,31 @@ async def refinements(query: str, cache_folder: str):
 async def seller_recommendation(query: str):
     """Get seller recommendations based on the query"""
     try:
-        response = await chat_with_gemini(query)
+        # Step 1: Get refinement categories for the query
+        click.echo("Fetching category refinements for the query...", err=True)
+        categories = await extract_refinements(query)
+
+        # Step 2: Format the refinements data as a string
+        refinements_str = json.dumps(categories, indent=2, ensure_ascii=False)
+
+        # Step 3: Construct the enhanced prompt with refinements data
+        enhanced_prompt = f"""
+As an Amazon seller advisor, please provide recommendations based on the following query:
+
+QUERY: {query}
+
+Here are the available category refinements for this query on Amazon:
+{refinements_str}
+
+Based on these categories and the query, please provide detailed seller recommendations, 
+including which categories might be most profitable, competitive analysis, and strategies 
+for success in these niches.
+"""
+
+        # Step 4: Send the enhanced prompt to Gemini
+        click.echo("Generating seller recommendations...", err=True)
+        response = await chat_with_gemini(enhanced_prompt)
+
         # Always output raw text
         click.echo(response)
     except Exception as e:

@@ -18,6 +18,7 @@ from .utils.search import (
     extract_refinements,
     extract_search_asin,
     extract_themed_products,
+    get_seller_recommendations,
 )
 from .utils.setup import setup_playwright
 from .utils.utils import load_prompt_template, save_to_temp_file
@@ -152,45 +153,19 @@ async def seller_recommendation(
 ):
     """Get seller recommendations based on the query"""
     try:
-        # Run both API calls in parallel
-        click.echo(
-            "Fetching product information and category refinements in parallel...",
-            err=True,
+        # Convert 'none' string to None to disable caching
+        cache_param = (
+            None if cache_folder and cache_folder.lower() == "none" else cache_folder
         )
-
-        # Use asyncio.gather to run both API calls concurrently
-        products, categories = await asyncio.gather(
-            extract_themed_products(query, product_limit, batch_size, cache_folder),
-            extract_refinements(query),
-        )
-
-        # Process and display the results
-        products_str = json.dumps(products, indent=2, ensure_ascii=False)
-        refinements_str = json.dumps(categories, indent=2, ensure_ascii=False)
-
-        click.echo("Themed product recommendations:")
-        click.echo(products_str)
-
-        click.echo("\nCategory refinements:")
-        click.echo(refinements_str)
-
-        # Load the prompt template and format it with the data
-        prompt_template = load_prompt_template("seller_recommendation")
-        enhanced_prompt = prompt_template.format(
-            query=query, refinements_str=refinements_str, products_str=products_str
-        )
-        click.echo("\nLoading prompt: seller_recommendation")
-
-        # Send the enhanced prompt to genAI
-        click.echo("\nGenerating seller recommendations...", err=True)
-        response = await chat_with_gemini(enhanced_prompt)
-
-        # Display the output
-        click.echo(response)
-
-        # Save the response to a temporary file
-        tmp_file_path = save_to_temp_file(response, prefix="seller_recommendation_")
-        click.echo(f"\nResponse saved to temporary file: {tmp_file_path}", err=True)
+        
+        # Get seller recommendations using the function from search.py
+        click.echo("Generating seller recommendations...", err=True)
+        result = await get_seller_recommendations(query, product_limit, batch_size, cache_param)
+        
+        # Display the results
+        click.echo("\nSeller Recommendations:")
+        click.echo(result["recommendations"])
+        click.echo(f"\nResponse saved to temporary file: {result['temp_file']}", err=True)
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)

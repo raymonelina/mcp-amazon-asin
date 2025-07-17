@@ -195,7 +195,7 @@ The `seller_recommendation` command uses Google's Gemini AI model to provide ins
 
 ```bash
 # Get strategies for specific product categories
-amazon-asin-cli seller_recommendation "What are the best strategies for selling electronics on Amazon?"
+amazon-asin-cli seller_recommendation "Coffee Maker"
 ```
 
 **Setup Requirements:**

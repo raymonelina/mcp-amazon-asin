@@ -1,9 +1,12 @@
 import asyncio
+import json
 import logging
 import os
 from playwright.async_api import async_playwright
 from mcp_amazon_asin.utils import get_amazon_search_page_url
 from mcp_amazon_asin.utils.dp import extract_dp
+from mcp_amazon_asin.utils.prompt import chat_with_gemini
+from mcp_amazon_asin.utils.utils import load_prompt_template, save_to_temp_file
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -199,3 +202,58 @@ async def extract_themed_products(
 
     logger.debug(f"Found {len(products)} themed products for '{query}'")
     return products
+
+
+async def get_seller_recommendations(
+    query: str, product_limit: int = 10, batch_size: int = 5, cache_folder: str = "cache"
+) -> dict:
+    """
+    Get seller recommendations based on the query.
+    
+    Args:
+        query: The search query
+        product_limit: Maximum number of products to analyze
+        batch_size: Number of products to process in parallel
+        cache_folder: Cache folder for JSON data (use 'none' to disable)
+        
+    Returns:
+        Dictionary containing products, categories, and AI-generated recommendations
+    """
+    logger.debug(f"Getting seller recommendations for '{query}'")
+    
+    # Convert 'none' string to None to disable caching
+    cache_param = None if cache_folder and cache_folder.lower() == "none" else cache_folder
+    
+    # Run both API calls in parallel
+    logger.debug("Fetching product information and category refinements in parallel...")
+    products, categories = await asyncio.gather(
+        extract_themed_products(query, product_limit, batch_size, cache_param),
+        extract_refinements(query),
+    )
+    
+    # Convert to JSON strings for the prompt
+    products_str = json.dumps(products, indent=2, ensure_ascii=False)
+    refinements_str = json.dumps(categories, indent=2, ensure_ascii=False)
+    
+    # Load the prompt template and format it with the data
+    prompt_template = load_prompt_template("seller_recommendation")
+    enhanced_prompt = prompt_template.format(
+        query=query, refinements_str=refinements_str, products_str=products_str
+    )
+    logger.debug("Prompt template loaded and formatted")
+    
+    # Send the enhanced prompt to Gemini
+    logger.debug("Generating seller recommendations...")
+    response = await chat_with_gemini(enhanced_prompt)
+    
+    # Save the response to a temporary file
+    tmp_file_path = save_to_temp_file(response, prefix="seller_recommendation_")
+    logger.debug(f"Response saved to temporary file: {tmp_file_path}")
+    
+    # Return all the data
+    return {
+        "products": products,
+        "categories": categories,
+        "recommendations": response,
+        "temp_file": tmp_file_path
+    }

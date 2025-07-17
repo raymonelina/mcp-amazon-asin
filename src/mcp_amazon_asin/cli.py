@@ -20,7 +20,7 @@ from .utils.search import (
     extract_themed_products,
 )
 from .utils.setup import setup_playwright
-from .utils.utils import load_prompt_template
+from .utils.utils import load_prompt_template, save_to_temp_file
 
 
 @click.group()
@@ -185,8 +185,12 @@ async def seller_recommendation(
         click.echo("\nGenerating seller recommendations...", err=True)
         response = await chat_with_gemini(enhanced_prompt)
 
-        # Always output raw text
+        # Display the output
         click.echo(response)
+
+        # Save the response to a temporary file
+        tmp_file_path = save_to_temp_file(response, prefix="seller_recommendation_")
+        click.echo(f"\nResponse saved to temporary file: {tmp_file_path}", err=True)
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)

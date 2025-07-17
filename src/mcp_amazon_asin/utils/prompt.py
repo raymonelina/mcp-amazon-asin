@@ -8,7 +8,7 @@ from typing import Dict, Any
 
 import aiohttp
 
-from .config import get_gemini_api_key, get_gemini_api_url, get_gemini_model
+from mcp_amazon_asin import config
 
 
 async def chat_with_gemini(prompt: str) -> str:
@@ -24,9 +24,9 @@ async def chat_with_gemini(prompt: str) -> str:
     Raises:
         ValueError: If the API request fails
     """
-    api_key = get_gemini_api_key()
-    api_url = get_gemini_api_url()
-    model = get_gemini_model()
+    api_key = config.get_gemini_api_key()
+    api_url = config.get_gemini_api_url()
+    model = config.get_gemini_model()
 
     # Construct the full API URL
     url = f"{api_url}/models/{model}:generateContent?key={api_key}"

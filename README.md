@@ -131,7 +131,7 @@ For local testing, you can use the CLI directly:
 - `search` - Search Amazon products
 - `refinements` - Get available refinement categories for search query
 - `theme` - Get themed product recommendations
-- `chat` - Chat with Gemini AI using the provided prompt
+- `seller_recommendation` - Get seller recommendations based on the query
 
 **Common Options:**
 - `--cache-folder` - Cache folder for JSON data (default: "cache", use 'none' to disable)
@@ -144,7 +144,7 @@ uv run amazon-asin-cli product B0CGXY13QW
 uv run amazon-asin-cli search "wireless headphones"
 uv run amazon-asin-cli refinements "wireless headphones"
 uv run amazon-asin-cli theme "gaming setup" --limit 10 --batch-size 5
-uv run amazon-asin-cli chat "Tell me about Amazon ASINs"
+uv run amazon-asin-cli seller_recommendation "How can I improve my Amazon seller metrics?"
 
 # Use custom cache folder
 uv run amazon-asin-cli search "wireless headphones" --limit 5 --cache-folder ./my-cache
@@ -160,8 +160,7 @@ amazon-asin-cli product B0CGXY13QW
 amazon-asin-cli search "wireless headphones"
 amazon-asin-cli refinements "wireless headphones"
 amazon-asin-cli theme "gaming setup" --limit 10 --batch-size 5
-amazon-asin-cli chat "Tell me about Amazon ASINs"
-amazon-asin-cli chat "What are the best wireless headphones?" --raw
+amazon-asin-cli seller_recommendation "What are the best strategies for selling electronics?"
 
 # Use custom cache folder
 amazon-asin-cli search "wireless headphones" --limit 5 --cache-folder ./my-cache
@@ -190,16 +189,13 @@ amazon-asin-cli --log-level WARNING search "wireless headphones"
 
 **Note:** If `amazon-asin-cli` command is not found, make sure you've activated the virtual environment or use `uv run`.
 
-### Gemini AI Chat Command
+### Seller Recommendation Command
 
-The `chat` command allows you to interact with Google's Gemini AI model directly from the CLI:
+The `seller_recommendation` command uses Google's Gemini AI model to provide insights and recommendations for Amazon sellers:
 
 ```bash
-# Basic usage (returns JSON with prompt and response)
-amazon-asin-cli chat "Tell me about Amazon ASINs"
-
-# Raw output (returns only the model's response text)
-amazon-asin-cli chat "What are the best wireless headphones?" --raw
+# Get strategies for specific product categories
+amazon-asin-cli seller_recommendation "What are the best strategies for selling electronics on Amazon?"
 ```
 
 **Setup Requirements:**
@@ -211,9 +207,6 @@ amazon-asin-cli chat "What are the best wireless headphones?" --raw
    ```
 
 2. Get a Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-
-**Options:**
-- `--raw` - Output raw text response instead of JSON format
 
 ---
 

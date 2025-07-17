@@ -1,7 +1,9 @@
+import asyncio
 import logging
 import os
 from playwright.async_api import async_playwright
 from mcp_amazon_asin.utils import get_amazon_search_page_url
+from mcp_amazon_asin.utils.dp import extract_dp
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -151,3 +153,49 @@ async def extract_refinements(query: str) -> list[dict]:
         await browser.close()
         logger.debug(f"Found {len(refinements)} refinement categories for '{query}'")
         return refinements
+
+
+async def extract_themed_products(
+    query: str, limit: int = 50, batch_size: int = 10, cache_folder: str = "cache"
+) -> list[dict]:
+    """
+    Get themed product recommendations for a search query.
+    
+    Args:
+        query: The search query
+        limit: Maximum number of products to fetch details for
+        batch_size: Number of products to process in parallel per batch
+        cache_folder: Cache folder for JSON data (use 'none' to disable)
+        
+    Returns:
+        List of detailed product information
+    """
+    logger.debug(f"Getting themed products for '{query}' (limit: {limit}, batch_size: {batch_size})")
+    
+    # Convert 'none' string to None to disable caching
+    cache_param = None if cache_folder and cache_folder.lower() == "none" else cache_folder
+
+    # Step 1: Get search results using the limit parameter
+    search_results = await extract_search_asin(query, limit, cache_param)
+
+    # Step 2: Get all ASINs and process them in batches
+    asins = [result["asin"] for result in search_results if result and result["asin"]]
+
+    products = []
+    if asins:
+        # Calculate total number of batches
+        total_batches = (len(asins) + batch_size - 1) // batch_size
+
+        # Process ASINs in batches
+        for i in range(0, len(asins), batch_size):
+            batch = asins[i : i + batch_size]
+            batch_asins = ", ".join(batch)
+            current_batch = i // batch_size + 1
+            logger.debug(f"Processing batch {current_batch}/{total_batches}: {len(batch)} ASINs [{batch_asins}]")
+            batch_products = await asyncio.gather(
+                *[extract_dp(asin, cache_folder=cache_param) for asin in batch]
+            )
+            products.extend(batch_products)
+
+    logger.debug(f"Found {len(products)} themed products for '{query}'")
+    return products

@@ -8,12 +8,12 @@ Available Amazon category refinements:
 Product details:
 {products_str}
 
-Provide:
+Provide in HTML format:
 1. Top 3 additional categories not in Amazon's list that would benefit shoppers
 2. For each category:
    - Why it is important to the shopper
    - Possible refinements
    - Recommended refinement selection
-   - 4 product recommendations (include ASIN and title) for this refinement
+   - 4 product recommendations for this refinement
 
-Use clear headings and bullet points in your response.
+Use HTML for response.

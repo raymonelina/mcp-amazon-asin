@@ -1,4 +1,6 @@
 import os
+import tempfile
+from typing import Optional
 
 import mcp_amazon_asin
 
@@ -47,3 +49,20 @@ def get_amazon_page_url(page_type: str, value: str) -> str:
         raise ValueError(
             f"Unsupported page_type '{page_type}'. Expected 'dp' or 'search'."
         )
+
+
+def save_to_temp_file(content: str, suffix: str = ".txt", prefix: Optional[str] = None) -> str:
+    """
+    Save content to a temporary file.
+    
+    Args:
+        content: The text content to save
+        suffix: File extension (default: .txt)
+        prefix: Optional prefix for the filename
+        
+    Returns:
+        The path to the temporary file
+    """
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=suffix, prefix=prefix) as tmp_file:
+        tmp_file.write(content)
+        return tmp_file.name

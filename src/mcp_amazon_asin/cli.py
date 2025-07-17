@@ -23,9 +23,6 @@ from .utils.setup import setup_playwright
 from .utils.utils import load_prompt_template
 
 
-
-
-
 @click.group()
 @click.option(
     "--log-level",
@@ -183,7 +180,6 @@ async def seller_recommendation(
             query=query, refinements_str=refinements_str, products_str=products_str
         )
         click.echo("\nLoading prompt: seller_recommendation")
-
 
         # Send the enhanced prompt to genAI
         click.echo("\nGenerating seller recommendations...", err=True)

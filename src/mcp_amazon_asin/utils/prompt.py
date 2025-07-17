@@ -71,5 +71,5 @@ async def chat_with_gemini(prompt: str) -> str:
                 return response_data["candidates"][0]["content"]["parts"][0]["text"]
             except (KeyError, IndexError) as e:
                 raise ValueError(
-                    f"Failed to parse API response: {e}\nResponse: {json.dumps(response_data)}"
+                    f"Failed to parse API response: {e}\nInput:{prompt}\nResponse: {json.dumps(response_data)}"
                 )

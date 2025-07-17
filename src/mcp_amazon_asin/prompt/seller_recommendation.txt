@@ -1,0 +1,19 @@
+As an Amazon seller advisor, please provide recommendations based on the following query:
+
+QUERY: {query}
+
+Here are the available category refinements for this query on Amazon:
+{refinements_str}
+
+Here are the products for this query with detailed information:
+{products_str}
+
+Based on these categories, products, and the query, please provide detailed seller recommendations, including:
+1. Which categories might be most profitable
+2. Competitive analysis of the current top products
+3. Price point recommendations
+4. Feature recommendations for new products in this space
+5. Strategies for success in these niches
+6. Potential challenges and how to overcome them
+
+Please format your response in a clear, structured way with headings and bullet points where appropriate.

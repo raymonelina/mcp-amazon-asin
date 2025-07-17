@@ -7,10 +7,12 @@ import asyncio
 import inspect
 import json
 import logging
+import os
 import sys
 
 import click
 
+import mcp_amazon_asin
 from .utils.dp import extract_dp
 from .utils.prompt import chat_with_gemini
 from .utils.search import (
@@ -19,6 +21,29 @@ from .utils.search import (
     extract_themed_products,
 )
 from .utils.setup import setup_playwright
+
+
+def load_prompt_template(template_name: str) -> str:
+    """
+    Load a prompt template from the prompt folder.
+
+    Args:
+        template_name: Name of the template file (without extension)
+
+    Returns:
+        The template content as a string
+    """
+    # Use package-relative path for prompt files
+    package_dir = os.path.dirname(mcp_amazon_asin.__file__)
+    prompt_path = os.path.join(package_dir, "prompt", f"{template_name}.txt")
+
+    try:
+        with open(prompt_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            f"Prompt template '{template_name}.txt' not found in the prompt folder"
+        )
 
 
 @click.group()
@@ -150,7 +175,7 @@ async def seller_recommendation(
 ):
     """Get seller recommendations based on the query"""
     try:
-        # Step 1: Run both API calls in parallel
+        # Run both API calls in parallel
         click.echo(
             "Fetching product information and category refinements in parallel...",
             err=True,
@@ -172,30 +197,15 @@ async def seller_recommendation(
         click.echo("\nCategory refinements:")
         click.echo(refinements_str)
 
-        # Step 3: Construct the enhanced prompt with both refinements and product data
-        enhanced_prompt = f"""
-As an Amazon seller advisor, please provide recommendations based on the following query:
+        # Load the prompt template and format it with the data
+        prompt_template = load_prompt_template("seller_recommendation")
+        enhanced_prompt = prompt_template.format(
+            query=query, refinements_str=refinements_str, products_str=products_str
+        )
+        click.echo("\nLoading prompt: seller_recommendation")
 
-QUERY: {query}
 
-Here are the available category refinements for this query on Amazon:
-{refinements_str}
-
-Here are the products for this query with detailed information:
-{products_str}
-
-Based on these categories, products, and the query, please provide detailed seller recommendations, including:
-1. Which categories might be most profitable
-2. Competitive analysis of the current top products
-3. Price point recommendations
-4. Feature recommendations for new products in this space
-5. Strategies for success in these niches
-6. Potential challenges and how to overcome them
-
-Please format your response in a clear, structured way with headings and bullet points where appropriate.
-"""
-
-        # Step 5: Send the enhanced prompt to Gemini
+        # Send the enhanced prompt to genAI
         click.echo("\nGenerating seller recommendations...", err=True)
         response = await chat_with_gemini(enhanced_prompt)
 

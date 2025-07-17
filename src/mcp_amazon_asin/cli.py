@@ -150,19 +150,27 @@ async def seller_recommendation(
 ):
     """Get seller recommendations based on the query"""
     try:
-        # Step 1: First call theme command to display product information
-        click.echo("First, displaying themed product recommendations:", err=True)
-        products = await extract_themed_products(
-            query, product_limit, batch_size, cache_folder
+        # Step 1: Run both API calls in parallel
+        click.echo(
+            "Fetching product information and category refinements in parallel...",
+            err=True,
         )
+
+        # Use asyncio.gather to run both API calls concurrently
+        products, categories = await asyncio.gather(
+            extract_themed_products(query, product_limit, batch_size, cache_folder),
+            extract_refinements(query),
+        )
+
+        # Process and display the results
         products_str = json.dumps(products, indent=2, ensure_ascii=False)
+        refinements_str = json.dumps(categories, indent=2, ensure_ascii=False)
+
+        click.echo("Themed product recommendations:")
         click.echo(products_str)
 
-        # Step 2: Get refinement categories for the query
-        click.echo("\nFetching category refinements for the query...", err=True)
-        categories = await extract_refinements(query)
-        refinements_str = json.dumps(categories, indent=2, ensure_ascii=False)
-        click.echo(products_str)
+        click.echo("\nCategory refinements:")
+        click.echo(refinements_str)
 
         # Step 3: Construct the enhanced prompt with both refinements and product data
         enhanced_prompt = f"""

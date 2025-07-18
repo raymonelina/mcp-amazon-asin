@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 
 
 from .utils.setup import setup_playwright
-from .utils.search import extract_search_asin
+from .utils.search import extract_search_asin, get_seller_recommendations
 from .utils.dp import extract_dp
 
 
@@ -33,12 +33,6 @@ class SearchInput(BaseModel):
     query: str = Field(..., description="Search query for Amazon products")
 
 
-class ThemeInput(BaseModel):
-    """Input for Amazon product theme search"""
-
-    query: str = Field(..., description="Search query for Amazon product theme")
-
-
 # Create server instance
 server: Server = Server("mcp-amazon-product")
 
@@ -48,7 +42,7 @@ async def handle_list_tools() -> list[types.Tool]:
     """List available tools"""
     return [
         types.Tool(
-            name="get_product_info",
+            name="get_product_info_from_asin",
             description="Get product information from Amazon using ASIN",
             inputSchema={
                 "type": "object",
@@ -76,33 +70,20 @@ async def handle_list_tools() -> list[types.Tool]:
             },
         ),
         types.Tool(
-            name="get_theme",
-            description="Get a list of product information for a given Amazon search theme",
+            name="get_recommendations",
+            description="Get a list of product sub category, refinements, and recommended products for a given Amazon search query",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "query": {
                         "type": "string",
-                        "description": "The Amazon product search theme query",
+                        "description": "The Amazon product search query",
                     }
                 },
                 "required": ["query"],
             },
         ),
     ]
-
-
-async def get_theme_products(input: ThemeInput) -> list[dict]:
-    """Get a list of product information for a given Amazon search theme"""
-    search_results = await extract_search(input.query)
-    search_results = search_results[:5]
-
-    product_details = []
-    for result in search_results:
-        if result:
-            product = await extract_dp(result["asin"])
-            product_details.append(product)
-    return product_details
 
 
 @server.call_tool()
@@ -113,7 +94,7 @@ async def handle_call_tool(
     if not arguments:
         raise ValueError("Missing arguments")
 
-    if name == "get_product_info":
+    if name == "get_product_info_from_asin":
         try:
             asin_input = ASINInput(**arguments)
             product_data = await extract_dp(asin_input.asin)
@@ -129,13 +110,17 @@ async def handle_call_tool(
 
 **Product URL:** {product_data['url']}
 
+**Sold By:** {product_data['sold_by'] or 'Not available'}
+
+**Delivery Date:** {product_data['delivery_date'] or 'Not available'}
+
+**Delivering To:** {product_data['delivering_to'] or 'Not available'}
+
 **Key Features:**
 """
 
             if product_data["features"]:
-                for feature in product_data["features"][
-                    :5
-                ]:  # Limit to first 5 features
+                for feature in product_data["features"]:
                     response += f"• {feature}\n"
             else:
                 response += "No features available\n"
@@ -163,9 +148,16 @@ async def handle_call_tool(
                     )
                 ]
 
-            response = "**Found the following ASINs:**\n" + "\n".join(
-                f"- {result['asin']}" for result in results if result["asin"]
-            )
+            # Format the response with more detailed product information
+            response = "**Found the following products:**\n"
+            for result in results:
+                if result["asin"]:
+                    response += f"- ASIN: {result['asin']}\n"
+                    response += f"  Title: {result.get('title', 'N/A')}\n"
+                    response += (
+                        f"  Sponsored: {'Yes' if result.get('sponsored') else 'No'}\n\n"
+                    )
+
             return [types.TextContent(type="text", text=response)]
         except Exception as e:
             return [
@@ -173,27 +165,24 @@ async def handle_call_tool(
                     type="text", text=f"Error searching for products: {str(e)}"
                 )
             ]
-    elif name == "get_theme":
+    elif name == "get_recommendations":
         try:
-            theme_input = ThemeInput(**arguments)
-            product_details = await get_theme_products(theme_input)
+            search_input = SearchInput(**arguments)
+            results = await get_seller_recommendations(search_input.query)
 
-            if not product_details:
+            if not results:
                 return [
                     types.TextContent(
-                        type="text", text="No products found for the given theme."
+                        type="text", text="No recommendations found for your query."
                     )
                 ]
 
-            return [
-                types.TextContent(
-                    type="json", text=json.dumps(product_details, indent=2)
-                )
-            ]
+            # Just return the recommendations directly
+            return [types.TextContent(type="text", text=results["recommendations"])]
         except Exception as e:
             return [
                 types.TextContent(
-                    type="text", text=f"Error getting theme products: {str(e)}"
+                    type="text", text=f"Error getting recommendations: {str(e)}"
                 )
             ]
     else:
